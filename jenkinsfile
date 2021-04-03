@@ -1,0 +1,41 @@
+pipeline{
+	agent any
+	tools{
+		maven 'M3.6'
+	}
+	stages{
+		stage('checkout') {
+			steps{
+				git 'https://github.com/sindhujagupta/petclinic.git'
+			}
+		}
+		stage('Build') {
+                         steps{
+				sh 'mvn clean package'
+                         }
+		}
+		stage('artifacts') {
+                          steps{
+				archiveArtifacts artifacts :'target/*.?ar', followsymlinks:false
+                         }
+		}
+		stage('Test cases') {
+                        steps{
+				junit 'target/surefire-reports/*.xml'
+                        }                               
+               	}
+	}
+	post{
+		success{
+				notify('success')
+			}
+		failure{
+				notify('failure')
+			}
+	}
+}
+def notify(status){
+	 emailext body : "$status-jenkins job",
+         sub : "$status",
+	 to : "cherry.arra1999@gmail.com"
+}
